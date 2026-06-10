@@ -39,10 +39,15 @@
 
 ## ソルバー
 
-共通インターフェース経由で切り替え可能にする: Exact Solver / OR-Tools / Simulated Annealing / OpenJij / D-Wave / 必要に応じて Amplify 等
+共通インターフェース経由で切り替え可能にする（2026-06-12 確定。D-Wave Ocean SDK のみ使用）:
 
-- 通常運用: シミュレータまたは古典最適化手法
-- 実機を使う場合: 比較実験 / 研究検証 / 問題規模の評価 / 最終成果の実証
+| キー | 実装 | 用途 |
+|---|---|---|
+| `sa` | dwave-samplers SimulatedAnnealingSampler | **通常運用の既定**。seed 固定で再現可能、複数候補を生成 |
+| `exact` | dimod ExactSolver（全探索） | テストの正解基準（変数 ~20 個まで） |
+| `dwave` | D-Wave 実機（Ocean SDK） | 研究検証 / 最終成果の実証 |
+
+- OpenJij・OR-Tools は不採用（SA と機能重複 / 古典厳密解の比較機能は不要と判断）
 - 実機利用は管理者のみ。実行回数・変数数・タイムアウト・利用料金に制限を設ける
 
 ## 実機利用時の記録

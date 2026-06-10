@@ -1,5 +1,24 @@
 # データ設計方針
 
+## テーブル一覧（src/db/schema/）
+
+| テーブル | 内容 |
+|---|---|
+| `staff` | 職員（admin / staff / viewer）。auth_user_id で Supabase Auth と紐付け |
+| `participants` | 利用者。希望職種・スキル・配慮は text[]（項目確定後に正規化を検討） |
+| `companies` | 実習先企業。受け入れ人数・対応可能配慮 |
+| `assignments` | 実習割当。状態 enum + 期間 CHECK 制約 + 提案理由 |
+| `pre_checks` | 実習前チェック（体調・睡眠・疲労・不安・意欲、1日1件） |
+| `reports` | 日報。原文保持・冪等キー（client_generated_id）・1割当1日1件 |
+| `report_comments` | 支援員コメント |
+| `report_revisions` | 日報修正履歴（修正者・理由・変更前スナップショット） |
+| `report_translations` | 日報翻訳（原文は reports 側に保持） |
+| `evaluations` | 支援員評価（割当×支援員でユニーク） |
+| `optimization_runs` | 最適化実行履歴。ソルバー固有メトリクスは solver_metrics(jsonb) |
+| `audit_logs` | 監査ログ（追記専用） |
+
+教材（materials）・バッジ（badges）・通知（notifications）のテーブルは項目確定後に追加する。
+
 ## データの正本
 
 | データ | 正本 |

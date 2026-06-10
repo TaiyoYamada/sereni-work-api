@@ -1,6 +1,8 @@
 import type { OpenAPIHono } from "@hono/zod-openapi";
 
-export function configureOpenAPI(app: OpenAPIHono) {
+import type { AppEnv } from "./types";
+
+export function configureOpenAPI(app: OpenAPIHono<AppEnv>) {
   app.doc("/doc", {
     openapi: "3.0.0",
     info: {

@@ -1,5 +1,2 @@
-# 2026-06-11 ビルド検証済みのバージョンで固定
-openjij==0.11.6
-dimod==0.12.21
-ortools==9.15.6755
+# 2026-06-12 確定: D-Wave Ocean SDK のみ（dimod の QUBO 定式化 / SA / ExactSolver / 実機接続）
 dwave-ocean-sdk==9.3.0

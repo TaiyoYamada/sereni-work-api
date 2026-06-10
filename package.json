@@ -15,9 +15,11 @@
     "test:watch": "vitest",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
+    "db:seed": "bun src/db/seed.ts",
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "@aws-sdk/client-lambda": "^3.1066.0",
     "@hono/node-server": "^2.0.4",
     "@hono/zod-openapi": "^1.4.0",
     "drizzle-orm": "^0.45.2",

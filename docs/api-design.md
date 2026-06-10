@@ -13,6 +13,17 @@ POST /optimization-runs           # 最適化実行
 POST /reports/{id}/review         # 日報確認
 ```
 
+## クライアント別のパス設計
+
+フォルダ（モジュール）はクライアント別に分割せず、パスで面を分ける。
+
+| 利用者層 | パス | 認可 |
+|---|---|---|
+| 職員（Web） | `/participants` `/assignments` 等のドメインルート | `requireStaff()` / `requireRole(...)` |
+| 利用者本人（iOS） | `/me/today` `/me/reports` 等の `/me` プレフィックス | `requireParticipant()` + 本人 ID スコープのクエリ |
+
+`/me` 系は JWT の本人のデータのみを返す。他人の ID を URL で受け取らない。
+
 ## エラー形式
 
 API エラー形式は統一する。Web と iOS は同じエラーコードを利用する。
