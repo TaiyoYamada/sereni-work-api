@@ -1,0 +1,15 @@
+# 開発用 Docker 構成
+#
+# Docker 化するのは optimizer のみ。
+# - DB / Auth / Storage は Supabase CLI（supabase start）が別途 Docker で起動する
+# - Hono は ホストで dev サーバーを実行する（ホットリロード優先）
+services:
+  optimizer:
+    build: ./optimizer
+    ports:
+      # AWS Lambda Runtime Interface Emulator（ベースイメージに同梱）
+      # 呼び出し: curl -XPOST http://localhost:9000/2015-03-31/functions/function/invocations -d '{}'
+      - "9000:8080"
+    environment:
+      # 個人情報は渡さない設計のため、接続情報等は不要（匿名 ID + 数値特徴のみ受け取る）
+      - LOG_LEVEL=INFO

@@ -1,0 +1,9 @@
+node_modules
+dist
+bun.lock
+optimizer
+supabase
+docs
+CLAUDE.md
+README.md
+src/db/migrations
