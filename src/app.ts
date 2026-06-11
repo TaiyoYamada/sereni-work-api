@@ -2,6 +2,7 @@ import { configureOpenAPI } from "./lib/configure-openapi";
 import { createApp } from "./lib/create-app";
 import assignments from "./modules/assignments/assignments.index";
 import companies from "./modules/companies/companies.index";
+import dashboard from "./modules/dashboard/dashboard.index";
 import evaluations from "./modules/evaluations/evaluations.index";
 import health from "./modules/health/health.index";
 import optimization from "./modules/optimization/optimization.index";
@@ -21,7 +22,8 @@ const routes = app
   .route("/", assignments)
   .route("/", reports)
   .route("/", evaluations)
-  .route("/", optimization);
+  .route("/", optimization)
+  .route("/", dashboard);
 
 export type AppType = typeof routes;
 export default routes;
