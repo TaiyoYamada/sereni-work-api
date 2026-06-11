@@ -10,6 +10,11 @@ export const participants = pgTable("participants", {
   id: uuid("id").primaryKey().defaultRandom(),
   /** Supabase Auth の auth.users.id。アカウントは職員が発行する */
   authUserId: uuid("auth_user_id").unique(),
+  /**
+   * 発行済みアカウントのログイン ID（docs/account-provisioning.md）。
+   * 実メールを持たない利用者にはシステム生成 ID を使う。email は連絡先として独立に変更しうるため別カラムで持つ
+   */
+  loginId: text("login_id").unique(),
   name: text("name").notNull(),
   kana: text("kana"),
   email: text("email").unique(),

@@ -1,9 +1,13 @@
 /**
  * 開発用シードデータ
  * 実行: bun run db:seed（事前に supabase start + bun run db:migrate）
+ * SUPABASE_SERVICE_ROLE_KEY（supabase status で確認）を設定すると、
+ * ログイン可能な Supabase Auth ユーザーも作成して紐付ける（パスワードは下記 SEED_PASSWORD）。
  * 個人情報はすべて架空のもの。
  */
 /* eslint-disable no-console */
+import { env } from "../env";
+import { supabaseAuthAdmin } from "../lib/clients/supabase-auth-admin";
 import { db } from "./client";
 import {
   assignments,
@@ -15,14 +19,40 @@ import {
   staff,
 } from "./schema";
 
+/** ローカル開発専用の共通パスワード */
+const SEED_PASSWORD = "sereni-dev-pass";
+
+/** auth ユーザーを作成して id を返す。発行できない場合は null（シード自体は続行する） */
+async function createAuthUser(email: string): Promise<string | null> {
+  if (!env.SUPABASE_SERVICE_ROLE_KEY) return null;
+  try {
+    const { id } = await supabaseAuthAdmin.createUser({ email, password: SEED_PASSWORD });
+    return id;
+  } catch {
+    console.warn(`auth ユーザーを作成できませんでした（既存の可能性）: ${email}`);
+    return null;
+  }
+}
+
 async function seed() {
   console.log("シード投入を開始します…");
+  if (!env.SUPABASE_SERVICE_ROLE_KEY) {
+    console.warn(
+      "SUPABASE_SERVICE_ROLE_KEY が未設定のため auth ユーザーは作成しません（ログイン不可のデータのみ投入）",
+    );
+  }
+
+  const [adminAuthId, supporterAuthId, tanakaAuthId] = await Promise.all([
+    createAuthUser("admin@example.com"),
+    createAuthUser("sato@example.com"),
+    createAuthUser("tanaka@example.com"),
+  ]);
 
   const [admin, supporter] = await db
     .insert(staff)
     .values([
-      { name: "山田 太郎", email: "admin@example.com", role: "admin" },
-      { name: "佐藤 花子", email: "sato@example.com", role: "staff" },
+      { name: "山田 太郎", email: "admin@example.com", role: "admin", authUserId: adminAuthId },
+      { name: "佐藤 花子", email: "sato@example.com", role: "staff", authUserId: supporterAuthId },
     ])
     .returning();
 
@@ -33,6 +63,8 @@ async function seed() {
         name: "田中 一郎",
         kana: "たなか いちろう",
         email: "tanaka@example.com",
+        authUserId: tanakaAuthId,
+        loginId: tanakaAuthId ? "tanaka@example.com" : undefined,
         desiredOccupations: ["事務", "軽作業"],
         skills: ["PC基本操作", "データ入力"],
         strengths: "コツコツした作業が得意",
@@ -177,6 +209,11 @@ async function seed() {
   });
 
   console.log("シード投入が完了しました");
+  if (env.SUPABASE_SERVICE_ROLE_KEY) {
+    console.log(
+      `ログイン可能: admin@example.com / sato@example.com（Web）, tanaka@example.com（iOS） パスワード: ${SEED_PASSWORD}`,
+    );
+  }
   process.exit(0);
 }
 

@@ -1,8 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
+import type { SupabaseAuthAdmin } from "../../lib/clients/supabase-auth-admin";
 import type { Staff } from "../../lib/types";
 import type { StaffRepository } from "./staff.repository";
-import { createStaff, updateStaff } from "./staff.service";
+import { createStaff, inviteStaff, updateStaff } from "./staff.service";
 
 function makeStaff(overrides: Partial<Staff> = {}): Staff {
   return {
@@ -52,6 +53,44 @@ describe("createStaff", () => {
     await expect(
       createStaff({ name: "新人", email: "dup@example.com", role: "staff" }, repo),
     ).rejects.toMatchObject({ code: "CONFLICT" });
+  });
+});
+
+function fakeAuthAdmin(overrides: Partial<SupabaseAuthAdmin> = {}): SupabaseAuthAdmin {
+  return {
+    inviteUserByEmail: vi.fn(async () => ({ id: crypto.randomUUID() })),
+    createUser: vi.fn(async () => ({ id: crypto.randomUUID() })),
+    updateUserPassword: vi.fn(async () => undefined),
+    ...overrides,
+  };
+}
+
+describe("inviteStaff", () => {
+  it("招待で authUserId が紐付く", async () => {
+    const member = makeStaff();
+    const repo = fakeRepo([member]);
+    const authUserId = crypto.randomUUID();
+    const authAdmin = fakeAuthAdmin({
+      inviteUserByEmail: vi.fn(async () => ({ id: authUserId })),
+    });
+
+    const after = await inviteStaff(member.id, repo, authAdmin);
+    expect(after.authUserId).toBe(authUserId);
+    expect(authAdmin.inviteUserByEmail).toHaveBeenCalledWith(member.email);
+  });
+
+  it("存在しない職員は NOT_FOUND", async () => {
+    await expect(
+      inviteStaff(crypto.randomUUID(), fakeRepo(), fakeAuthAdmin()),
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+  });
+
+  it("停止中の職員は CONFLICT", async () => {
+    const member = makeStaff({ isActive: false });
+    const repo = fakeRepo([member]);
+    await expect(inviteStaff(member.id, repo, fakeAuthAdmin())).rejects.toMatchObject({
+      code: "CONFLICT",
+    });
   });
 });
 

@@ -8,6 +8,13 @@
       "when": 1781115329708,
       "tag": "0000_sticky_venom",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1781144423426,
+      "tag": "0001_icy_daimon_hellstrom",
+      "breakpoints": true
     }
   ]
 }

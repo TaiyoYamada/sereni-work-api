@@ -22,6 +22,10 @@ export const participantResponseSchema = z
     assignedStaffId: z.uuid().nullable(),
     notes: z.string().nullable(),
     isActive: z.boolean(),
+    /** アカウント発行済み（Supabase Auth ユーザーが紐付いている）か */
+    hasAccount: z.boolean(),
+    /** 発行済みアカウントのログイン ID（未発行は null） */
+    loginId: z.string().nullable(),
     createdAt: z.iso.datetime(),
     updatedAt: z.iso.datetime(),
   })
@@ -66,9 +70,22 @@ export const listParticipantsQuerySchema = paginationQuerySchema.extend({
 export type ListParticipantsQuery = z.infer<typeof listParticipantsQuerySchema>;
 
 export function toParticipantResponse(row: Participant): ParticipantResponse {
+  // authUserId は内部キーのためレスポンスへ含めない（hasAccount に変換する）
+  const { authUserId, ...rest } = row;
   return {
-    ...row,
+    ...rest,
+    hasAccount: authUserId !== null,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };
 }
+
+/** アカウント発行・再発行の結果。initialPassword はこのレスポンスでのみ取得できる */
+export const participantAccountResponseSchema = z
+  .object({
+    loginId: z.string(),
+    initialPassword: z.string(),
+  })
+  .openapi("ParticipantAccount");
+
+export type ParticipantAccountResponse = z.infer<typeof participantAccountResponseSchema>;

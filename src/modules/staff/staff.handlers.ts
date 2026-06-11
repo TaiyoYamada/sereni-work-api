@@ -6,7 +6,7 @@ import type { AppEnv } from "../../lib/types";
 import { staffActor } from "../../middleware/require-role";
 import type * as routes from "./staff.routes";
 import { toStaffResponse } from "./staff.schema";
-import { createStaff, getStaff, listStaff, updateStaff } from "./staff.service";
+import { createStaff, getStaff, inviteStaff, listStaff, updateStaff } from "./staff.service";
 
 export const list: RouteHandler<typeof routes.list, AppEnv> = async (c) => {
   const query = c.req.valid("query");
@@ -34,6 +34,14 @@ export const create: RouteHandler<typeof routes.create, AppEnv> = async (c) => {
     after: member,
   });
   return c.json(toStaffResponse(member), 201);
+};
+
+export const invite: RouteHandler<typeof routes.invite, AppEnv> = async (c) => {
+  const { id } = c.req.valid("param");
+  const member = await inviteStaff(id);
+  // アカウント発行は監査ログ必須対象（docs/permissions.md）
+  await audit(c, { action: "staff.invite", targetType: "staff", targetId: id });
+  return c.json(toStaffResponse(member), 200);
 };
 
 export const patch: RouteHandler<typeof routes.patch, AppEnv> = async (c) => {

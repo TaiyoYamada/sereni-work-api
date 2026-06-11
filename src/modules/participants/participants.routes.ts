@@ -6,6 +6,7 @@ import { requireRole, requireStaff } from "../../middleware/require-role";
 import {
   createParticipantSchema,
   listParticipantsQuerySchema,
+  participantAccountResponseSchema,
   participantResponseSchema,
   updateParticipantSchema,
 } from "./participants.schema";
@@ -64,6 +65,41 @@ export const create = createRoute({
       content: { "application/json": { schema: participantResponseSchema } },
     },
     ...errorResponses(401, 403, 422),
+  },
+});
+
+export const issueAccount = createRoute({
+  method: "post",
+  path: "/participants/{id}/account",
+  tags,
+  summary: "利用者アカウント発行（admin は全員 / staff は担当のみ）",
+  description:
+    "Supabase Auth ユーザーを作成し、ログイン ID と初期パスワードを返す。初期パスワードはこのレスポンスでのみ取得できる",
+  middleware: [authenticate(), requireRole("admin", "staff")] as const,
+  request: { params: idParamSchema },
+  responses: {
+    201: {
+      description: "発行したアカウント情報",
+      content: { "application/json": { schema: participantAccountResponseSchema } },
+    },
+    ...errorResponses(401, 403, 404, 409, 502),
+  },
+});
+
+export const resetAccountPassword = createRoute({
+  method: "post",
+  path: "/participants/{id}/account/reset-password",
+  tags,
+  summary: "利用者の初期パスワード再発行（admin は全員 / staff は担当のみ）",
+  description: "新しい初期パスワードを生成して返す。このレスポンスでのみ取得できる",
+  middleware: [authenticate(), requireRole("admin", "staff")] as const,
+  request: { params: idParamSchema },
+  responses: {
+    200: {
+      description: "再発行したアカウント情報",
+      content: { "application/json": { schema: participantAccountResponseSchema } },
+    },
+    ...errorResponses(401, 403, 404, 409, 502),
   },
 });
 

@@ -12,6 +12,8 @@ export const staffResponseSchema = z
     email: z.string(),
     role: staffRoleSchema,
     isActive: z.boolean(),
+    /** アカウント発行済み（Supabase Auth ユーザーが紐付いている）か */
+    hasAccount: z.boolean(),
     createdAt: z.iso.datetime(),
     updatedAt: z.iso.datetime(),
   })
@@ -54,6 +56,7 @@ export function toStaffResponse(row: Staff): StaffResponse {
     email: row.email,
     role: row.role,
     isActive: row.isActive,
+    hasAccount: row.authUserId !== null,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };

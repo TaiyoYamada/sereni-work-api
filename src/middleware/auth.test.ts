@@ -32,6 +32,7 @@ function makeParticipant(overrides: Partial<Participant>): Participant {
   return {
     id: crypto.randomUUID(),
     authUserId: null,
+    loginId: null,
     name: "テスト利用者",
     kana: null,
     email: null,

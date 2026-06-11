@@ -13,6 +13,9 @@ const envSchema = z.object({
     .string()
     .min(32)
     .default("super-secret-jwt-token-with-at-least-32-characters-long"),
+  // Supabase Admin API（アカウント発行）用の service role key。サーバー専用・ログ出力禁止。
+  // ローカルは `supabase status` の service_role key を設定する。未設定でもアカウント発行以外は動作する
+  SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
   // 最適化 Lambda の呼び出し先。ローカルは RIE（docker compose up optimizer）、
   // 本番は OPTIMIZER_FUNCTION_NAME（AWS SDK で Invoke）を設定する
   OPTIMIZER_URL: z.url().default("http://localhost:9000"),

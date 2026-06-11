@@ -77,6 +77,24 @@ export const create = createRoute({
   },
 });
 
+export const invite = createRoute({
+  method: "post",
+  path: "/staff/{id}/invite",
+  tags,
+  summary: "職員へ招待メールを送信（アカウント発行。管理者のみ）",
+  description:
+    "Supabase Auth ユーザーを作成して招待メールを送る。未ログインの職員への再実行は再送として動作する",
+  middleware: [authenticate(), requireRole("admin")] as const,
+  request: { params: idParamSchema },
+  responses: {
+    200: {
+      description: "招待後の職員",
+      content: { "application/json": { schema: staffResponseSchema } },
+    },
+    ...errorResponses(401, 403, 404, 409, 502),
+  },
+});
+
 export const patch = createRoute({
   method: "patch",
   path: "/staff/{id}",

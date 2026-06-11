@@ -10,3 +10,13 @@ export function assertCanEditParticipant(actor: Staff, participant: Participant)
   if (actor.role === "staff" && participant.assignedStaffId === actor.id) return;
   throw new AppError("FORBIDDEN", 403, "担当外の利用者は編集できません");
 }
+
+/**
+ * 利用者のアカウント発行・パスワード再発行ができるか。
+ * 編集権限と同じ範囲（admin は全利用者 / staff は担当利用者のみ）。
+ */
+export function assertCanManageParticipantAccount(actor: Staff, participant: Participant): void {
+  if (actor.role === "admin") return;
+  if (actor.role === "staff" && participant.assignedStaffId === actor.id) return;
+  throw new AppError("FORBIDDEN", 403, "担当外の利用者のアカウントは操作できません");
+}
