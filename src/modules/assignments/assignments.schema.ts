@@ -1,6 +1,6 @@
 import { z } from "@hono/zod-openapi";
 
-import { paginationQuerySchema } from "../../lib/schemas";
+import { paginationQuerySchema, sortOrderSchema } from "../../lib/schemas";
 import type { Assignment } from "./assignments.domain";
 
 export const assignmentStatusSchema = z.enum([
@@ -86,6 +86,8 @@ export const listAssignmentsQuerySchema = paginationQuerySchema.extend({
   /** この日付を含む期間の割当のみ（カレンダー表示用） */
   from: z.iso.date().optional(),
   to: z.iso.date().optional(),
+  sort: z.enum(["startDate", "createdAt"]).default("startDate"),
+  order: sortOrderSchema.default("desc"),
 });
 
 export type ListAssignmentsQuery = z.infer<typeof listAssignmentsQuerySchema>;

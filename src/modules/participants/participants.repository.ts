@@ -1,4 +1,4 @@
-import { and, count, desc, eq, ilike, inArray, or, type SQL } from "drizzle-orm";
+import { and, asc, count, desc, eq, ilike, inArray, or, type SQL } from "drizzle-orm";
 
 import { db } from "../../db/client";
 import { participants } from "../../db/schema";
@@ -23,12 +23,15 @@ export const participantsRepository = {
     }
     const where = conditions.length > 0 ? and(...conditions) : undefined;
 
+    const sortColumns = { name: participants.name, createdAt: participants.createdAt };
+    const direction = query.order === "asc" ? asc : desc;
+
     const [rows, totals] = await Promise.all([
       db
         .select()
         .from(participants)
         .where(where)
-        .orderBy(desc(participants.createdAt))
+        .orderBy(direction(sortColumns[query.sort]))
         .limit(query.perPage)
         .offset((query.page - 1) * query.perPage),
       db.select({ value: count() }).from(participants).where(where),

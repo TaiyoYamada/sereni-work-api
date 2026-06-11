@@ -1,6 +1,6 @@
 import { z } from "@hono/zod-openapi";
 
-import { paginationQuerySchema } from "../../lib/schemas";
+import { paginationQuerySchema, sortOrderSchema } from "../../lib/schemas";
 import type { companies } from "../../db/schema";
 
 export type Company = typeof companies.$inferSelect;
@@ -62,6 +62,8 @@ export const listCompaniesQuerySchema = paginationQuerySchema.extend({
   /** 企業名・業種の部分一致検索 */
   q: z.string().max(100).optional(),
   isActive: z.stringbool().optional(),
+  sort: z.enum(["name", "capacity", "createdAt"]).default("createdAt"),
+  order: sortOrderSchema.default("desc"),
 });
 
 export type ListCompaniesQuery = z.infer<typeof listCompaniesQuerySchema>;

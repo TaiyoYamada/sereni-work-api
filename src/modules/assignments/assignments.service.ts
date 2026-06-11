@@ -221,7 +221,7 @@ export async function listMyAssignments(
   query: { page: number; perPage: number },
   deps: AssignmentsDeps = defaultDeps,
 ): Promise<{ rows: AssignmentWithNames[]; total: number }> {
-  return deps.repo.list({ ...query, participantId });
+  return deps.repo.list({ ...query, participantId, sort: "startDate", order: "desc" });
 }
 
 export async function completeAssignment(id: string, deps: AssignmentsDeps = defaultDeps) {

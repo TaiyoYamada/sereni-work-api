@@ -1,6 +1,6 @@
 import { z } from "@hono/zod-openapi";
 
-import { paginationQuerySchema } from "../../lib/schemas";
+import { paginationQuerySchema, sortOrderSchema } from "../../lib/schemas";
 import type { Participant } from "../../lib/types";
 
 export const supportedLanguages = ["ja", "en", "zh-Hans", "vi", "ko", "pt"] as const;
@@ -65,6 +65,8 @@ export const listParticipantsQuerySchema = paginationQuerySchema.extend({
   q: z.string().max(100).optional(),
   assignedStaffId: z.uuid().optional(),
   isActive: z.stringbool().optional(),
+  sort: z.enum(["name", "createdAt"]).default("createdAt"),
+  order: sortOrderSchema.default("desc"),
 });
 
 export type ListParticipantsQuery = z.infer<typeof listParticipantsQuerySchema>;

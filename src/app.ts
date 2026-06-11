@@ -9,6 +9,7 @@ import optimization from "./modules/optimization/optimization.index";
 import participants from "./modules/participants/participants.index";
 import reports from "./modules/reports/reports.index";
 import staff from "./modules/staff/staff.index";
+import tags from "./modules/tags/tags.index";
 
 const app = createApp();
 configureOpenAPI(app);
@@ -23,7 +24,8 @@ const routes = app
   .route("/", reports)
   .route("/", evaluations)
   .route("/", optimization)
-  .route("/", dashboard);
+  .route("/", dashboard)
+  .route("/", tags);
 
 export type AppType = typeof routes;
 export default routes;

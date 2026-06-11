@@ -1,4 +1,4 @@
-import { and, count, desc, eq, gte, lte, type SQL } from "drizzle-orm";
+import { asc, and, count, desc, eq, gte, lte, type SQL } from "drizzle-orm";
 
 import { db } from "../../db/client";
 import {
@@ -67,10 +67,13 @@ export const reportsRepository = {
     }
     const where = conditions.length > 0 ? and(...conditions) : undefined;
 
+    const sortColumns = { reportDate: reports.reportDate, createdAt: reports.createdAt };
+    const direction = query.order === "asc" ? asc : desc;
+
     const [rows, totals] = await Promise.all([
       joined()
         .where(where)
-        .orderBy(desc(reports.reportDate), desc(reports.createdAt))
+        .orderBy(direction(sortColumns[query.sort]), desc(reports.createdAt))
         .limit(query.perPage)
         .offset((query.page - 1) * query.perPage),
       db.select({ value: count() }).from(reports).where(where),

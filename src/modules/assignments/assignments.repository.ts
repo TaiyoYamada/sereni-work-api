@@ -1,4 +1,4 @@
-import { and, count, desc, eq, gte, inArray, lte, ne, type SQL } from "drizzle-orm";
+import { asc, and, count, desc, eq, gte, inArray, lte, ne, type SQL } from "drizzle-orm";
 
 import { db } from "../../db/client";
 import { assignments, companies, participants } from "../../db/schema";
@@ -49,10 +49,13 @@ export const assignmentsRepository = {
     if (query.from) conditions.push(gte(assignments.endDate, query.from));
     const where = conditions.length > 0 ? and(...conditions) : undefined;
 
+    const sortColumns = { startDate: assignments.startDate, createdAt: assignments.createdAt };
+    const direction = query.order === "asc" ? asc : desc;
+
     const [rows, totals] = await Promise.all([
       joined()
         .where(where)
-        .orderBy(desc(assignments.startDate), desc(assignments.createdAt))
+        .orderBy(direction(sortColumns[query.sort]), desc(assignments.createdAt))
         .limit(query.perPage)
         .offset((query.page - 1) * query.perPage),
       db.select({ value: count() }).from(assignments).where(where),

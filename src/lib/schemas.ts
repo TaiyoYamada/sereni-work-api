@@ -13,6 +13,11 @@ export const paginationQuerySchema = z.object({
 
 export type PaginationQuery = z.infer<typeof paginationQuerySchema>;
 
+/** 一覧の並び順（sort キーは各モジュールでホワイトリスト定義する） */
+export const sortOrderSchema = z.enum(["asc", "desc"]);
+
+export type SortOrder = z.infer<typeof sortOrderSchema>;
+
 /** 一覧レスポンスのメタ情報 */
 export const paginationMetaSchema = z.object({
   page: z.number().int(),

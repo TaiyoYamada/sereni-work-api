@@ -1,6 +1,6 @@
 import { z } from "@hono/zod-openapi";
 
-import { paginationQuerySchema } from "../../lib/schemas";
+import { paginationQuerySchema, sortOrderSchema } from "../../lib/schemas";
 import type { Report } from "./reports.domain";
 
 export const reportStatusSchema = z.enum(["DRAFT", "SUBMITTED", "REVIEWED", "NEEDS_ACTION"]);
@@ -64,6 +64,8 @@ export const listReportsQuerySchema = paginationQuerySchema.extend({
   from: z.iso.date().optional(),
   to: z.iso.date().optional(),
   interviewNeeded: z.stringbool().optional(),
+  sort: z.enum(["reportDate", "createdAt"]).default("reportDate"),
+  order: sortOrderSchema.default("desc"),
 });
 
 export type ListReportsQuery = z.infer<typeof listReportsQuerySchema>;

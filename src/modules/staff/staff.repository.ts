@@ -1,4 +1,4 @@
-import { and, count, desc, eq, ilike, or, type SQL } from "drizzle-orm";
+import { and, asc, count, desc, eq, ilike, or, type SQL } from "drizzle-orm";
 
 import { db } from "../../db/client";
 import { staff } from "../../db/schema";
@@ -19,12 +19,15 @@ export const staffRepository = {
     if (query.isActive !== undefined) conditions.push(eq(staff.isActive, query.isActive));
     const where = conditions.length > 0 ? and(...conditions) : undefined;
 
+    const sortColumns = { name: staff.name, createdAt: staff.createdAt };
+    const direction = query.order === "asc" ? asc : desc;
+
     const [rows, totals] = await Promise.all([
       db
         .select()
         .from(staff)
         .where(where)
-        .orderBy(desc(staff.createdAt))
+        .orderBy(direction(sortColumns[query.sort]))
         .limit(query.perPage)
         .offset((query.page - 1) * query.perPage),
       db.select({ value: count() }).from(staff).where(where),

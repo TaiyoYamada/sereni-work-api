@@ -20,7 +20,7 @@ import {
 } from "./schema";
 
 /** ローカル開発専用の共通パスワード */
-const SEED_PASSWORD = "sereni-dev-pass";
+const SEED_PASSWORD = "secret0000";
 
 /** auth ユーザーを作成して id を返す。発行できない場合は null（シード自体は続行する） */
 async function createAuthUser(email: string): Promise<string | null> {

@@ -151,7 +151,7 @@ export async function listMyReports(
   query: { page: number; perPage: number },
   deps: ReportsDeps = defaultDeps,
 ): Promise<{ rows: ReportWithName[]; total: number }> {
-  return deps.repo.list({ ...query, participantId: actor.id });
+  return deps.repo.list({ ...query, participantId: actor.id, sort: "reportDate", order: "desc" });
 }
 
 /** 利用者本人の実習前チェック提出（同日2回目は上書き） */

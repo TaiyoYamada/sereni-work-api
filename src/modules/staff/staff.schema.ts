@@ -1,6 +1,6 @@
 import { z } from "@hono/zod-openapi";
 
-import { paginationQuerySchema } from "../../lib/schemas";
+import { paginationQuerySchema, sortOrderSchema } from "../../lib/schemas";
 import type { Staff } from "../../lib/types";
 
 export const staffRoleSchema = z.enum(["admin", "staff", "viewer"]);
@@ -45,6 +45,8 @@ export const listStaffQuerySchema = paginationQuerySchema.extend({
   q: z.string().max(100).optional(),
   role: staffRoleSchema.optional(),
   isActive: z.stringbool().optional(),
+  sort: z.enum(["name", "createdAt"]).default("createdAt"),
+  order: sortOrderSchema.default("desc"),
 });
 
 export type ListStaffQuery = z.infer<typeof listStaffQuerySchema>;
