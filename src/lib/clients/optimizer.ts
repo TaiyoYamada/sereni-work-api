@@ -11,7 +11,7 @@ import { AppError } from "../errors";
 
 export type OptimizerRequest = {
   runId: string;
-  solver: "sa" | "exact" | "dwave";
+  solver: "sa" | "sqa" | "exact" | "dwave";
   seed?: number;
   numReads?: number;
   maxCandidates?: number;

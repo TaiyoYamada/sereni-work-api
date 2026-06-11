@@ -43,16 +43,16 @@ async function seed() {
   }
 
   const [adminAuthId, supporterAuthId, tanakaAuthId] = await Promise.all([
-    createAuthUser("admin@example.com"),
-    createAuthUser("sato@example.com"),
-    createAuthUser("tanaka@example.com"),
+    createAuthUser("admin@test.com"),
+    createAuthUser("sato@test.com"),
+    createAuthUser("tanaka@test.com"),
   ]);
 
   const [admin, supporter] = await db
     .insert(staff)
     .values([
-      { name: "山田 太郎", email: "admin@example.com", role: "admin", authUserId: adminAuthId },
-      { name: "佐藤 花子", email: "sato@example.com", role: "staff", authUserId: supporterAuthId },
+      { name: "山田 太郎", email: "admin@test.com", role: "admin", authUserId: adminAuthId },
+      { name: "佐藤 花子", email: "sato@test.com", role: "staff", authUserId: supporterAuthId },
     ])
     .returning();
 
@@ -62,9 +62,9 @@ async function seed() {
       {
         name: "田中 一郎",
         kana: "たなか いちろう",
-        email: "tanaka@example.com",
+        email: "tanaka@test.com",
         authUserId: tanakaAuthId,
-        loginId: tanakaAuthId ? "tanaka@example.com" : undefined,
+        loginId: tanakaAuthId ? "tanaka@test.com" : undefined,
         desiredOccupations: ["事務", "軽作業"],
         skills: ["PC基本操作", "データ入力"],
         strengths: "コツコツした作業が得意",
@@ -76,7 +76,7 @@ async function seed() {
       {
         name: "鈴木 美咲",
         kana: "すずき みさき",
-        email: "suzuki@example.com",
+        email: "suzuki@test.com",
         preferredLanguage: "ja",
         desiredOccupations: ["接客", "清掃"],
         skills: ["接客経験あり"],
@@ -87,7 +87,7 @@ async function seed() {
       {
         name: "グエン ヴァン アン",
         kana: "ぐえん ゔぁん あん",
-        email: "nguyen@example.com",
+        email: "nguyen@test.com",
         preferredLanguage: "vi",
         desiredOccupations: ["製造", "軽作業"],
         skills: ["フォークリフト経験"],
@@ -211,7 +211,7 @@ async function seed() {
   console.log("シード投入が完了しました");
   if (env.SUPABASE_SERVICE_ROLE_KEY) {
     console.log(
-      `ログイン可能: admin@example.com / sato@example.com（Web）, tanaka@example.com（iOS） パスワード: ${SEED_PASSWORD}`,
+      `ログイン可能: admin@test.com / sato@test.com（Web）, tanaka@test.com（iOS） パスワード: ${SEED_PASSWORD}`,
     );
   }
   process.exit(0);

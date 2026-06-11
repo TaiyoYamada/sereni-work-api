@@ -10,7 +10,7 @@ class ProblemValidationError(Exception):
     """問題定義が不正な場合に送出する"""
 
 
-SUPPORTED_SOLVERS = ("sa", "exact", "dwave")
+SUPPORTED_SOLVERS = ("sa", "sqa", "exact", "dwave")
 
 MAX_VARIABLES = 5000
 MAX_NUM_READS = 2000

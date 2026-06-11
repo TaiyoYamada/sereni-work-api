@@ -39,15 +39,16 @@
 
 ## ソルバー
 
-共通インターフェース経由で切り替え可能にする（2026-06-12 確定。D-Wave Ocean SDK のみ使用）:
+共通インターフェース経由で切り替え可能にする（2026-06-12 確定。依存は D-Wave Ocean SDK のみ使用）:
 
 | キー | 実装 | 用途 |
 |---|---|---|
-| `sa` | dwave-samplers SimulatedAnnealingSampler | **通常運用の既定**。seed 固定で再現可能、複数候補を生成 |
+| `sqa` | 自作 SQA（経路積分モンテカルロ。src/sqa.py、numpy のみ） | **通常運用の既定**（2026-06-11 決定）。量子アニーリングのシミュレーション。seed 固定で再現可能。変数 500 個まで |
+| `sa` | dwave-samplers SimulatedAnnealingSampler | 古典手法。大規模問題（変数 500 個超）のフォールバック |
 | `exact` | dimod ExactSolver（全探索） | テストの正解基準（変数 ~20 個まで） |
 | `dwave` | D-Wave 実機（Ocean SDK） | 研究検証 / 最終成果の実証 |
 
-- OpenJij・OR-Tools は不採用（SA と機能重複 / 古典厳密解の比較機能は不要と判断）
+- OpenJij・OR-Tools は不採用（SQA は依存を増やさず自作 / 古典厳密解の比較機能は不要と判断）
 - 実機利用は管理者のみ。実行回数・変数数・タイムアウト・利用料金に制限を設ける
 
 ## 実機利用時の記録

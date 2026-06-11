@@ -9,8 +9,10 @@ import time
 from dataclasses import dataclass, field
 
 import dimod
+import numpy as np
 from dwave.samplers import SimulatedAnnealingSampler
 
+import sqa
 from models import Problem
 from qubo import build_bqm
 
@@ -83,6 +85,53 @@ def solve_sa(problem: Problem) -> SolveOutcome:
     )
 
 
+def solve_sqa(problem: Problem) -> SolveOutcome:
+    """量子アニーリングのシミュレーション（経路積分モンテカルロ。seed 固定で再現可能）。
+
+    実機（dwave）と同じ横磁場アニーリングの振る舞いを古典計算機上で模擬する。
+    """
+    bqm, variables, constraint_count = build_bqm(problem)
+    if len(bqm.variables) > sqa.MAX_VARIABLES:
+        raise SolverError(
+            f"sqa ソルバーは変数 {sqa.MAX_VARIABLES} 個までです（大規模問題は sa を使ってください）"
+        )
+    started = time.perf_counter()
+
+    # BQM をイジング形式（±1 スピン）の numpy 配列へ変換する
+    h_dict, j_dict, _offset = bqm.to_ising()
+    order = list(bqm.variables)
+    index = {name: i for i, name in enumerate(order)}
+    h = np.zeros(len(order))
+    for name, value in h_dict.items():
+        h[index[name]] = value
+    j = np.zeros((len(order), len(order)))
+    for (u, v), value in j_dict.items():
+        j[index[u], index[v]] += value
+        j[index[v], index[u]] += value
+
+    spin_results = sqa.run_sqa(h, j, num_reads=problem.num_reads, seed=problem.seed)
+    binary_samples = [
+        {name: int((spins[index[name]] + 1) // 2) for name in order} for spins in spin_results
+    ]
+    sampleset = dimod.SampleSet.from_samples_bqm(binary_samples, bqm)
+    samples, energies = _distinct_lowest(sampleset, problem.max_candidates)
+    return SolveOutcome(
+        samples=samples,
+        energies=list(energies),
+        variable_count=len(variables),
+        constraint_count=constraint_count,
+        execution_time_ms=int((time.perf_counter() - started) * 1000),
+        metrics={
+            "method": "path-integral-monte-carlo",
+            "trotterSlices": sqa.TROTTER_SLICES,
+            "numReads": sqa.effective_reads(problem.num_reads),
+            "requestedNumReads": problem.num_reads,
+            "sweeps": sqa.SWEEPS,
+            "seed": problem.seed,
+        },
+    )
+
+
 def solve_dwave(problem: Problem) -> SolveOutcome:
     """量子アニーリング実機（管理者のみ。DWAVE_API_TOKEN が必要）。
 
@@ -128,6 +177,7 @@ def solve_dwave(problem: Problem) -> SolveOutcome:
 SOLVERS = {
     "exact": solve_exact,
     "sa": solve_sa,
+    "sqa": solve_sqa,
     "dwave": solve_dwave,
 }
 

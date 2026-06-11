@@ -5,7 +5,7 @@ import type { optimizationRuns } from "../../db/schema";
 
 export type OptimizationRun = typeof optimizationRuns.$inferSelect;
 
-export const solverSchema = z.enum(["sa", "exact", "dwave"]);
+export const solverSchema = z.enum(["sa", "sqa", "exact", "dwave"]);
 
 /** 条件の重み（業務用語。Web では「希望を重視」等のスライダーとして提示する） */
 export const weightsSchema = z

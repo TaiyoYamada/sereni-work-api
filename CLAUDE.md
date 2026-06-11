@@ -26,7 +26,7 @@ Python の最適化処理（optimizer）もこのリポジトリに含む。
 - PostgreSQL（Supabase）
 - 認証: Supabase Auth（JWT）
 - ファイル: Supabase Storage
-- 最適化処理（optimizer/）: Python + D-Wave Ocean SDK のみ（dimod の QUBO 定式化 / SA（既定）/ ExactSolver / 実機）。別の AWS Lambda（コンテナ、Amazon ECR）としてデプロイし、Hono 側から呼び出す
+- 最適化処理（optimizer/）: Python + D-Wave Ocean SDK のみ（dimod の QUBO 定式化 / SQA=量子アニーリングのシミュレーション（既定・自作 numpy 実装）/ SA / ExactSolver / 実機）。別の AWS Lambda（コンテナ、Amazon ECR）としてデプロイし、Hono 側から呼び出す
 
 ## 開発コマンド・ローカル環境
 

@@ -13,6 +13,8 @@ const envSchema = z.object({
     .string()
     .min(32)
     .default("super-secret-jwt-token-with-at-least-32-characters-long"),
+  // CORS で許可するオリジン（カンマ区切り）。Web アプリの URL を設定する
+  CORS_ALLOWED_ORIGINS: z.string().default("http://localhost:3000"),
   // Supabase Admin API（アカウント発行）用の service role key。サーバー専用・ログ出力禁止。
   // ローカルは `supabase status` の service_role key を設定する。未設定でもアカウント発行以外は動作する
   SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
