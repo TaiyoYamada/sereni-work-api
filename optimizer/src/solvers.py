@@ -9,11 +9,10 @@ import time
 from dataclasses import dataclass, field
 
 import dimod
-import numpy as np
 from dwave.samplers import SimulatedAnnealingSampler
+from ortools.sat.python import cp_model
 
-import sqa
-from models import Problem
+from models import Problem, Variable, benefit, feasible_variables
 from qubo import build_bqm
 
 
@@ -85,49 +84,75 @@ def solve_sa(problem: Problem) -> SolveOutcome:
     )
 
 
-def solve_sqa(problem: Problem) -> SolveOutcome:
-    """量子アニーリングのシミュレーション（経路積分モンテカルロ。seed 固定で再現可能）。
+def solve_cpsat(problem: Problem) -> SolveOutcome:
+    """OR-Tools CP-SAT（実用の既定。制約をそのまま扱い厳密解を返す）"""
+    variables = feasible_variables(problem)
+    model = cp_model.CpModel()
+    x = {v.name: model.new_bool_var(v.name) for v in variables}
+    constraint_count = 0
 
-    実機（dwave）と同じ横磁場アニーリングの振る舞いを古典計算機上で模擬する。
-    """
-    bqm, variables, constraint_count = build_bqm(problem)
-    if len(bqm.variables) > sqa.MAX_VARIABLES:
-        raise SolverError(
-            f"sqa ソルバーは変数 {sqa.MAX_VARIABLES} 個までです（大規模問題は sa を使ってください）"
+    # 同一利用者・同一期間は高々1社
+    for participant in problem.participants:
+        for period_id in problem.periods:
+            group = [
+                x[v.name]
+                for v in variables
+                if v.participant_id == participant.id and v.period_id == period_id
+            ]
+            if len(group) >= 2:
+                model.add_at_most_one(group)
+                constraint_count += 1
+
+    # 企業×期間の定員
+    for company in problem.companies:
+        for period_id in problem.periods:
+            group = [
+                x[v.name]
+                for v in variables
+                if v.company_id == company.id and v.period_id == period_id
+            ]
+            cap = company.capacity.get(period_id, 0)
+            if len(group) > cap:
+                model.add(sum(group) <= cap)
+                constraint_count += 1
+
+    # 効用の最大化（CP-SATは整数係数のためスケーリング）
+    scale = 1000
+    model.maximize(
+        sum(
+            int(
+                benefit(
+                    problem,
+                    problem.participant(v.participant_id),
+                    problem.company(v.company_id),
+                )
+                * scale
+            )
+            * x[v.name]
+            for v in variables
         )
+    )
+
+    solver = cp_model.CpSolver()
+    solver.parameters.random_seed = problem.seed
+    solver.parameters.max_time_in_seconds = problem.time_limit_ms / 1000
     started = time.perf_counter()
+    status = solver.solve(model)
+    elapsed_ms = int((time.perf_counter() - started) * 1000)
 
-    # BQM をイジング形式（±1 スピン）の numpy 配列へ変換する
-    h_dict, j_dict, _offset = bqm.to_ising()
-    order = list(bqm.variables)
-    index = {name: i for i, name in enumerate(order)}
-    h = np.zeros(len(order))
-    for name, value in h_dict.items():
-        h[index[name]] = value
-    j = np.zeros((len(order), len(order)))
-    for (u, v), value in j_dict.items():
-        j[index[u], index[v]] += value
-        j[index[v], index[u]] += value
+    if status not in (cp_model.OPTIMAL, cp_model.FEASIBLE):
+        raise SolverError(f"CP-SAT が解を見つけられませんでした（status={status}）")
 
-    spin_results = sqa.run_sqa(h, j, num_reads=problem.num_reads, seed=problem.seed)
-    binary_samples = [
-        {name: int((spins[index[name]] + 1) // 2) for name in order} for spins in spin_results
-    ]
-    sampleset = dimod.SampleSet.from_samples_bqm(binary_samples, bqm)
-    samples, energies = _distinct_lowest(sampleset, problem.max_candidates)
+    sample = {name: int(solver.value(var)) for name, var in x.items()}
     return SolveOutcome(
-        samples=samples,
-        energies=list(energies),
+        samples=[sample],
+        energies=[None],
         variable_count=len(variables),
         constraint_count=constraint_count,
-        execution_time_ms=int((time.perf_counter() - started) * 1000),
+        execution_time_ms=elapsed_ms,
         metrics={
-            "method": "path-integral-monte-carlo",
-            "trotterSlices": sqa.TROTTER_SLICES,
-            "numReads": sqa.effective_reads(problem.num_reads),
-            "requestedNumReads": problem.num_reads,
-            "sweeps": sqa.SWEEPS,
-            "seed": problem.seed,
+            "status": solver.status_name(status),
+            "objective": solver.objective_value / scale,
         },
     )
 
@@ -166,7 +191,9 @@ def solve_dwave(problem: Problem) -> SolveOutcome:
                 len(chain) for chain in embedding_info.get("embedding", {}).values()
             ),
             "chainStrength": embedding_info.get("chain_strength"),
-            "chainBreakFraction": float(sampleset.record.chain_break_fraction.mean())
+            "chainBreakFraction": float(
+                sampleset.record.chain_break_fraction.mean()
+            )
             if "chain_break_fraction" in sampleset.record.dtype.names
             else None,
             "qpuTiming": timing,
@@ -177,7 +204,7 @@ def solve_dwave(problem: Problem) -> SolveOutcome:
 SOLVERS = {
     "exact": solve_exact,
     "sa": solve_sa,
-    "sqa": solve_sqa,
+    "cpsat": solve_cpsat,
     "dwave": solve_dwave,
 }
 
