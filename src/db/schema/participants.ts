@@ -1,5 +1,6 @@
-import { boolean, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { boolean, date, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
+import { supportStage } from "./enums";
 import { staff } from "./staff";
 
 /**
@@ -36,6 +37,14 @@ export const participants = pgTable("participants", {
   needsTransport: boolean("needs_transport").notNull().default(false),
   /** 担当支援員 */
   assignedStaffId: uuid("assigned_staff_id").references(() => staff.id),
+  /** 支援パイプラインのステージ（既定はアセスメント） */
+  stage: supportStage("stage").notNull().default("ASSESSMENT"),
+  /** 利用開始日（最長2年の利用上限の起点） */
+  serviceStartDate: date("service_start_date"),
+  /** 受給者証番号 */
+  recipientCertNumber: text("recipient_cert_number"),
+  /** 受給者証の有効期限（支給決定期間の終了日） */
+  recipientCertExpiry: date("recipient_cert_expiry"),
   notes: text("notes"),
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

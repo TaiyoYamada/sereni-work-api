@@ -1,5 +1,6 @@
 import { z } from "@hono/zod-openapi";
 
+import { supportStages } from "../../db/schema";
 import { paginationQuerySchema, sortOrderSchema } from "../../lib/schemas";
 import type { Participant } from "../../lib/types";
 
@@ -20,6 +21,10 @@ export const participantResponseSchema = z
     commuteConditions: z.string().nullable(),
     needsTransport: z.boolean(),
     assignedStaffId: z.uuid().nullable(),
+    stage: z.enum(supportStages),
+    serviceStartDate: z.string().nullable(),
+    recipientCertNumber: z.string().nullable(),
+    recipientCertExpiry: z.string().nullable(),
     notes: z.string().nullable(),
     isActive: z.boolean(),
     /** アカウント発行済み（Supabase Auth ユーザーが紐付いている）か */
@@ -47,6 +52,11 @@ export const createParticipantSchema = z
     commuteConditions: z.string().max(2000).optional(),
     needsTransport: z.boolean().default(false),
     assignedStaffId: z.uuid().optional(),
+    stage: z.enum(supportStages).default("ASSESSMENT"),
+    // 日付・受給者証は null で明示的にクリアできる（作成・更新で共通のペイロードを使えるように）
+    serviceStartDate: z.iso.date().nullable().optional(),
+    recipientCertNumber: z.string().max(100).nullable().optional(),
+    recipientCertExpiry: z.iso.date().nullable().optional(),
     notes: z.string().max(5000).optional(),
   })
   .openapi("CreateParticipant");

@@ -21,6 +21,20 @@ export const reportStatus = pgEnum("report_status", [
   "NEEDS_ACTION",
 ]);
 
+/**
+ * 支援パイプラインのステージ（ヒアリングの支援の流れ）。
+ * アセスメント → 事業所内訓練 → 体験実習 → 就職活動 → 定着支援
+ */
+export const supportStages = [
+  "ASSESSMENT",
+  "TRAINING",
+  "INTERNSHIP",
+  "JOB_HUNTING",
+  "RETENTION",
+] as const;
+
+export const supportStage = pgEnum("support_stage", supportStages);
+
 /** 最適化実行の状態 */
 export const optimizationRunStatus = pgEnum("optimization_run_status", [
   "PENDING",
