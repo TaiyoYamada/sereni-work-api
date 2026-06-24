@@ -27,6 +27,21 @@ function fakeRepo(overrides: Partial<DashboardRepository> = {}): DashboardReposi
     async missingPreChecks() {
       return [];
     },
+    async expiringParticipants() {
+      return [
+        { participantId: "p1", name: "山田", reason: "CERT", dueDate: "2026-07-01" },
+        { participantId: "p2", name: "佐藤", reason: "USAGE_LIMIT", dueDate: "2026-07-20" },
+      ];
+    },
+    async stageDistribution() {
+      return [
+        { stage: "ASSESSMENT", count: 2 },
+        { stage: "TRAINING", count: 1 },
+        { stage: "INTERNSHIP", count: 3 },
+        { stage: "JOB_HUNTING", count: 0 },
+        { stage: "RETENTION", count: 0 },
+      ];
+    },
     ...overrides,
   };
 }
@@ -50,6 +65,13 @@ describe("getDashboard", () => {
       expectedReports: 3,
       submittedReports: 1,
     });
+  });
+
+  it("期限アラートとステージ分布をそのまま返す", async () => {
+    const dashboard = await getDashboard("2026-06-11", fakeRepo());
+    expect(dashboard.expiringParticipants).toHaveLength(2);
+    expect(dashboard.expiringParticipants[0]).toMatchObject({ reason: "CERT" });
+    expect(dashboard.stageDistribution).toHaveLength(5);
   });
 
   it("トレンドが空でも 0 件として返す", async () => {

@@ -1,6 +1,6 @@
 import { z } from "@hono/zod-openapi";
 
-import { assignmentStatus } from "../../db/schema/enums";
+import { assignmentStatus, supportStages } from "../../db/schema/enums";
 
 export const dashboardCountsSchema = z.object({
   inProgressAssignments: z.number().int(),
@@ -38,6 +38,20 @@ export const assignmentStatusCountSchema = z.object({
   count: z.number().int(),
 });
 
+/** 期限が近い利用者（受給者証の更新 / 利用上限2年） */
+export const expiringParticipantSchema = z.object({
+  participantId: z.uuid(),
+  name: z.string(),
+  reason: z.enum(["CERT", "USAGE_LIMIT"]),
+  dueDate: z.iso.date(),
+});
+
+/** 支援ステージ別の在籍人数 */
+export const stageCountSchema = z.object({
+  stage: z.enum(supportStages),
+  count: z.number().int(),
+});
+
 export const dashboardResponseSchema = z
   .object({
     counts: dashboardCountsSchema,
@@ -50,6 +64,8 @@ export const dashboardResponseSchema = z
     reportTrend: z.array(reportTrendPointSchema),
     conditionTrend: z.array(conditionTrendPointSchema),
     assignmentStatusCounts: z.array(assignmentStatusCountSchema),
+    expiringParticipants: z.array(expiringParticipantSchema),
+    stageDistribution: z.array(stageCountSchema),
   })
   .openapi("Dashboard");
 
@@ -59,3 +75,5 @@ export type MissingPreCheck = z.infer<typeof missingPreCheckSchema>;
 export type ReportTrendPoint = z.infer<typeof reportTrendPointSchema>;
 export type ConditionTrendPoint = z.infer<typeof conditionTrendPointSchema>;
 export type AssignmentStatusCount = z.infer<typeof assignmentStatusCountSchema>;
+export type ExpiringParticipant = z.infer<typeof expiringParticipantSchema>;
+export type StageCount = z.infer<typeof stageCountSchema>;

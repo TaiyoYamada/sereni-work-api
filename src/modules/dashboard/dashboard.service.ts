@@ -9,14 +9,23 @@ export async function getDashboard(
   today: string,
   repo: DashboardRepository = dashboardRepository,
 ): Promise<DashboardResponse> {
-  const [assignmentStatusCounts, reportCounts, reportTrend, conditionTrend, missingPreChecks] =
-    await Promise.all([
-      repo.assignmentStatusCounts(),
-      repo.reportCounts(),
-      repo.reportTrend(today),
-      repo.conditionTrend(today),
-      repo.missingPreChecks(today),
-    ]);
+  const [
+    assignmentStatusCounts,
+    reportCounts,
+    reportTrend,
+    conditionTrend,
+    missingPreChecks,
+    expiringParticipants,
+    stageDistribution,
+  ] = await Promise.all([
+    repo.assignmentStatusCounts(),
+    repo.reportCounts(),
+    repo.reportTrend(today),
+    repo.conditionTrend(today),
+    repo.missingPreChecks(today),
+    repo.expiringParticipants(today),
+    repo.stageDistribution(),
+  ]);
 
   const statusCount = (status: string) =>
     assignmentStatusCounts.find((row) => row.status === status)?.count ?? 0;
@@ -39,5 +48,7 @@ export async function getDashboard(
     reportTrend,
     conditionTrend,
     assignmentStatusCounts,
+    expiringParticipants,
+    stageDistribution,
   };
 }
