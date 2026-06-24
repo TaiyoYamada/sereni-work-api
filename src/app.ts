@@ -7,6 +7,7 @@ import evaluations from "./modules/evaluations/evaluations.index";
 import health from "./modules/health/health.index";
 import optimization from "./modules/optimization/optimization.index";
 import participants from "./modules/participants/participants.index";
+import reflections from "./modules/reflections/reflections.index";
 import reports from "./modules/reports/reports.index";
 import staff from "./modules/staff/staff.index";
 import tags from "./modules/tags/tags.index";
@@ -23,6 +24,7 @@ const routes = app
   .route("/", assignments)
   .route("/", reports)
   .route("/", evaluations)
+  .route("/", reflections)
   .route("/", optimization)
   .route("/", dashboard)
   .route("/", tags);

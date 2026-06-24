@@ -6,6 +6,7 @@ export * from "./enums";
 export * from "./evaluations";
 export * from "./optimization";
 export * from "./participants";
+export * from "./reflections";
 export * from "./relations";
 export * from "./reports";
 export * from "./staff";
