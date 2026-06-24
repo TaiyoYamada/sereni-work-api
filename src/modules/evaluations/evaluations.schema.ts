@@ -45,6 +45,30 @@ export const listEvaluationsQuerySchema = z.object({
   assignmentId: z.uuid(),
 });
 
+export const participantIdParamSchema = z.object({
+  participantId: z.uuid(),
+});
+
+/**
+ * 利用者の成長ポイント（実習ごとに評価を集約した時系列の 1 点）。
+ * 各軸は同一割当に複数の支援員評価がある場合は平均、評価が無い軸は null。
+ */
+export const participantGrowthPointSchema = z
+  .object({
+    assignmentId: z.uuid(),
+    companyName: z.string(),
+    startDate: z.string(),
+    endDate: z.string(),
+    attitude: z.number().nullable(),
+    aptitude: z.number().nullable(),
+    communication: z.number().nullable(),
+    accommodationFit: z.number().nullable(),
+    continuity: z.number().nullable(),
+  })
+  .openapi("ParticipantGrowthPoint");
+
+export type ParticipantGrowthPoint = z.infer<typeof participantGrowthPointSchema>;
+
 export function toEvaluationResponse(row: EvaluationWithName): EvaluationResponse {
   return {
     ...row,

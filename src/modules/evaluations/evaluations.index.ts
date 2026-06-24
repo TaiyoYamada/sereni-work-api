@@ -3,6 +3,7 @@ import * as handlers from "./evaluations.handlers";
 import * as routes from "./evaluations.routes";
 
 const router = createRouter()
+  .openapi(routes.participantGrowth, handlers.participantGrowth)
   .openapi(routes.list, handlers.list)
   .openapi(routes.upsert, handlers.upsert);
 

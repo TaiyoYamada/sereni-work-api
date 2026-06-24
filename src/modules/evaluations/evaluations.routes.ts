@@ -6,10 +6,28 @@ import { requireRole, requireStaff } from "../../middleware/require-role";
 import {
   evaluationResponseSchema,
   listEvaluationsQuerySchema,
+  participantGrowthPointSchema,
+  participantIdParamSchema,
   upsertEvaluationSchema,
 } from "./evaluations.schema";
 
 const tags = ["evaluations"];
+
+export const participantGrowth = createRoute({
+  method: "get",
+  path: "/participants/{participantId}/evaluations",
+  tags,
+  summary: "利用者の成長（実習ごとの評価の時系列）",
+  middleware: [authenticate(), requireStaff()] as const,
+  request: { params: participantIdParamSchema },
+  responses: {
+    200: {
+      description: "成長ポイント（実習期間の昇順）",
+      content: { "application/json": { schema: z.array(participantGrowthPointSchema) } },
+    },
+    ...errorResponses(401, 403, 404),
+  },
+});
 
 export const list = createRoute({
   method: "get",
